@@ -67,7 +67,12 @@ const sendMessage = async (req, res) => {
   */
 
   try {
-    const { chatId, content, contentType, options } = req.body
+    let { chatId,contactId, content, contentType, options } = req.body
+    if(contactId && !chatId){
+      const contact = await client.getContactById(contactId)
+      const chat = await contact.getChat()
+      chatId = chat.id
+    }
     const client = sessions.get(req.params.sessionId)
 
     let messageOut
@@ -77,6 +82,7 @@ const sendMessage = async (req, res) => {
           const media = options.media
           options.media = new MessageMedia(media.mimetype, media.data, media.filename = null, media.filesize = null)
         }
+
         messageOut = await client.sendMessage(chatId, content, options)
         break
       case 'MessageMediaFromURL': {
@@ -322,6 +328,26 @@ const getChats = async (req, res) => {
     const client = sessions.get(req.params.sessionId)
     const chats = await client.getChats()
     res.json({ success: true, chats })
+  } catch (error) {
+    sendErrorResponse(res, 500, error.message)
+  }
+}
+
+const getProspects = async (req, res) => {
+  try {
+    const client = sessions.get(req.params.sessionId)
+    const contacts = await client.getContacts()
+
+
+    const merged2 = await Promise.all(contacts.map(async (contact) => {
+      const chat = await contact.getChat()
+      return { chat, contact }
+    }))
+    //const nonSavedContacts = chatContacts.filter((contact) => !contact.isMyContact)
+   
+    
+    const prospects = merged2
+    res.json({ success: true, prospects })
   } catch (error) {
     sendErrorResponse(res, 500, error.message)
   }
@@ -1241,6 +1267,7 @@ module.exports = {
   getChatById,
   getChatLabels,
   getChats,
+  getProspects,
   getChatsByLabelId,
   getCommonGroups,
   getContactById,
