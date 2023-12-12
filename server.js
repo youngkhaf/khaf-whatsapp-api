@@ -1,4 +1,4 @@
-const app = require('./src/app')
+const {server} = require('./src/app')
 const { baseWebhookURL } = require('./src/config')
 require('dotenv').config()
 
@@ -11,6 +11,6 @@ if (!baseWebhookURL) {
   process.exit(1) // Terminate the application with an error code
 }
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server running on port ${port}`)
 })
