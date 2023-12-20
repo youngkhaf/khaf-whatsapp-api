@@ -1,7 +1,6 @@
 const {  disabledCallbacks } = require('./config')
-const { socketServer } = require('./app')
 // Trigger webhook endpoint
-const triggerWebhook = (webhookURL, sessionId, dataType, data) => {
+const triggerWebhook = (sessionId, dataType, data) => {
   console.log({sessionId,dataType,data})
   require('./app').socketServer?.to(sessionId).emit("message",{sessionId,dataType,data})
 

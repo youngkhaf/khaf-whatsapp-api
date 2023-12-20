@@ -9,9 +9,14 @@ const cors = require('cors')
 const { socketClientStore } = require('./socketClientStore')
 const { globalApiKey } = require('./config')
 // Initialize Express app
-
+const corsOptions = {
+  origin: '*',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
 app.disable('x-powered-by')
-app.use(cors())
+app.use(cors(corsOptions))
 app.use(bodyParser.json({ limit: maxAttachmentSize + 1000000 }))
 app.use(bodyParser.urlencoded({ limit: maxAttachmentSize + 1000000, extended: true }))
 app.use('/', routes)
