@@ -193,6 +193,46 @@ const sessionQrCodeImage = async (req, res) => {
 }
 
 /**
+ * QR code as image of the session with the given session ID.
+ *
+ * @function
+ * @async
+ * @param {Object} req - The HTTP request object.
+ * @param {Object} res - The HTTP response object.
+ * @param {string} req.params.sessionId - The session ID to start.
+ * @returns {Promise<void>}
+ * @throws {Error} If there was an error getting status of the session.
+ */
+const sessionScreenShot = async (req, res) => {
+  // #swagger.summary = 'Get session QR code as image'
+  // #swagger.description = 'QR code as image of the session with the given session ID.'
+  try {
+    const sessionId = req.params.sessionId
+    const session = sessions.get(sessionId)
+    if (!session) {
+      return res.json({ success: false, message: 'session_not_found' })
+    }
+    const imageString = await session.pupPage.screenshot({
+      fullPage: true
+    })
+    res.setHeader('Content-Type', 'image/png')
+    return res.send(imageString)
+  } catch (error) {
+    console.log('sessionQrCodeImage ERROR', error)
+    /* #swagger.responses[500] = {
+      description: "Server Failure.",
+      content: {
+        "application/json": {
+          schema: { "$ref": "#/definitions/ErrorResponse" }
+        }
+      }
+    }
+    */
+    sendErrorResponse(res, 500, error.message)
+  }
+}
+
+/**
  * Terminates the session with the given session ID.
  *
  * @function
@@ -323,6 +363,7 @@ module.exports = {
   statusSession,
   sessionQrCode,
   sessionQrCodeImage,
+  sessionScreenShot,
   terminateSession,
   terminateInactiveSessions,
   terminateAllSessions
