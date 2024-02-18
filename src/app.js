@@ -50,4 +50,16 @@ socketServer.on('disconnect', (socket) => {
 
 restoreSessions()
 
+app.use(cors(corsOptions))
+app.options('*', cors())
+//prevent Redirect is not allowed for a preflight request.
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.status(200).end()
+  } else {
+    next()
+  }
+})
+
+
 module.exports = { server, socketServer }
