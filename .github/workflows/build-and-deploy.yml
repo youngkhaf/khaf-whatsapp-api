@@ -9,7 +9,7 @@
 name: Build and Deploy
 on:
   push:
-    branches: [ main ]  # Change to your desired branch(es)
+    branches: [ master ]  # Change to your desired branch(es)
   #handle gh workflow run build-and-deploy
   workflow_dispatch:
     
