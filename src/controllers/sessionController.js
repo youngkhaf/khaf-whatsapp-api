@@ -33,6 +33,7 @@ const startSession = async (req, res) => {
       sendErrorResponse(res, 422, setupSessionReturn.message)
       return
     }
+    
     /* #swagger.responses[200] = {
       description: "Status of the initiated session.",
       content: {

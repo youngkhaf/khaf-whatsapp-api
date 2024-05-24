@@ -1,4 +1,5 @@
-const {  disabledCallbacks } = require('./config')
+const { default: axios } = require('axios')
+const {  disabledCallbacks, globalApiKey } = require('./config')
 // Trigger webhook endpoint
 const triggerWebhook = (webhookURL, sessionId, dataType, data) => {
   axios.post(webhookURL, { dataType, data, sessionId }, { headers: { 'x-api-key': globalApiKey } })

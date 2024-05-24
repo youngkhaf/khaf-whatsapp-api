@@ -1,0 +1,75 @@
+#var DOCKER_IMAGE_NAME khaf_wweb_api
+#var HOSTNAME: api.sentek.app
+#secret SERVER_USERNAME
+#var DEPLOY_PATH: ~/.deploy
+#DOCKER_USERNAME
+#DOCKER_PASSWORD
+#SSH_PRIVATE_KEY
+
+name: Build and Deploy
+on:
+  push:
+    branches: [ main ]  # Change to your desired branch(es)
+  #handle gh workflow run build-and-deploy
+  workflow_dispatch:
+    
+
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest  # Or a relevant runner environment
+
+    steps:
+      - uses: actions/checkout@v3  # Checkout code from GitHub
+
+      - name: Login to Docker Hub (securely)
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_IMAGE_NAME}}:latest .
+
+      - name: Push Docker image to Docker Hub
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_IMAGE_NAME}}
+
+        #Copy docker-compose and .env files to target server
+      
+      - uses: actions/checkout@v4
+      - name: copy files to target server via scp
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{vars.HOSTNAME}}
+          username: ${{secrets.SERVER_USERNAME}}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "./docker-compose.yml,./docker-compose.prod.yml,./.env.prod"
+          target: "${{vars.DEPLOY_PATH}}/${{ github.event.repository.name }}/"
+
+      
+      - name: SSH to target server and run commands
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{vars.HOSTNAME}}
+          username: ${{secrets.SERVER_USERNAME}}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{vars.DEPLOY_PATH}}/${{ github.event.repository.name }}
+            docker system prune -f
+            docker compose -f docker-compose.yml down
+            docker compose -f docker-compose.yml pull
+            #avoid image is already in use by another container
+            docker compose -f docker-compose.yml up -d --remove-orphans
+
+
+#view workflow
+#gh workflow view .github/workflows/build-and-deploy.yml -w
+#run workflow
+#gh workflow run build-and-deploy.
+#view last build on the web
+
+#exemple at
+#https://github.com/alex-ac/github-action-ssh-docker-compose/blob/master/README.md
+
+
