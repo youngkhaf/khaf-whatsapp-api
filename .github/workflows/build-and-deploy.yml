@@ -43,7 +43,7 @@ jobs:
         with:
           host: ${{vars.HOSTNAME}}
           username: ${{secrets.SERVER_USERNAME}}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{secrets.SSH_PRIVATE_KEY }}
           source: "./docker-compose.yml,./docker-compose.prod.yml,./.env.prod"
           target: "${{vars.DEPLOY_PATH}}/${{ github.event.repository.name }}/"
 
@@ -53,7 +53,7 @@ jobs:
         with:
           host: ${{vars.HOSTNAME}}
           username: ${{secrets.SERVER_USERNAME}}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ${{vars.DEPLOY_PATH}}/${{ github.event.repository.name }}
             docker system prune -f

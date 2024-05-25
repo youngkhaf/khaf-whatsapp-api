@@ -30,3 +30,6 @@ EXPOSE 3000
 
 # Start the API
 CMD ["npm", "start"]
+
+#build
+# docker build -t youngkhaf/khaf_wweb_api:lastest .

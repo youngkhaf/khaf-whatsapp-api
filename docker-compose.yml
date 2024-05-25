@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   app:
-    container_name: khaf_whatsapp_web_api
-    image: youngkhaf/khaf-whatsapp-api:latest # Pull the image from Docker Hub
+    container_name: khaf_wweb_api
+    image: youngkhaf/khaf_wweb_api:latest # Pull the image from Docker Hub
     # restart: always
     ports:
       - "3000:3000"
@@ -22,4 +22,5 @@ services:
       # - WEB_VERSION_CACHE_TYPE=none # OPTIONAL, DETERMINES WHERE TO GET THE WHATSAPP WEB VERSION(local, remote or none), DEFAULT 'none'
       # - RECOVER_SESSIONS=TRUE # OPTIONAL, SHOULD WE RECOVER THE SESSION IN CASE OF PAGE FAILURES
     volumes:
-      - /srv/volumes/khaf_wweb_api_sessions:/usr/src/app/sessions # Mount the local ./sessions/ folder to the container's /usr/src/app/sessions folder
+      #- /srv/volumes/khaf_wweb_api_sessions:/usr/src/app/sessions
+      - ./sessions:/usr/src/app/sessions # Mount the local ./sessions/ folder to the container's /usr/src/app/sessions folder

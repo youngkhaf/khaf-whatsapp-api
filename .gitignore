@@ -8,6 +8,7 @@ node_modules
 sessions
 sessions_test
 .wwebjs_cache
+khaf_wweb_api_sessions
 
 # Ignore logs
 logs

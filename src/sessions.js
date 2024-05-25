@@ -30,7 +30,7 @@ const validateSession = async (sessionId) => {
         await client.pupPage.evaluate('1'); break
       } catch (error) {
         // Ignore error and wait for a bit before trying again
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise(resolve => setTimeout(resolve, 1000))
       }
     }
 
