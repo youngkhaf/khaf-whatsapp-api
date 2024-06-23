@@ -43,7 +43,6 @@ jobs:
           script: |
             cd ${{vars.DEPLOY_PATH}}/${{ github.event.repository.name }}
             docker build -t ${{vars.DOCKER_IMAGE_NAME}} .
-            docker system prune -f
             docker compose -f docker-compose.yml down
             docker compose -f docker-compose.yml pull
             #avoid image is already in use by another container
