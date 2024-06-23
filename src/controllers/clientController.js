@@ -1,6 +1,8 @@
 const { MessageMedia, Location, Buttons, List, Poll } = require('whatsapp-web.js')
 const { sessions } = require('../sessions')
 const { sendErrorResponse } = require('../utils')
+const redisClient = require('../redisClient')
+const { getClientProspects } = require('../client')
 
 /**
  * Send a message to a chat using the WhatsApp API
@@ -67,8 +69,8 @@ const sendMessage = async (req, res) => {
   */
 
   try {
-    let { chatId,contactId, content, contentType, options } = req.body
-    if(contactId && !chatId){
+    let { chatId, contactId, content, contentType, options } = req.body
+    if (contactId && !chatId) {
       const contact = await client.getContactById(contactId)
       const chat = await contact.getChat()
       chatId = chat.id
@@ -337,21 +339,54 @@ const getChats = async (req, res) => {
 }
 
 const getProspects = async (req, res) => {
+  const { ignoreCache } = req.query
+
   try {
     const client = sessions.get(req.params.sessionId)
-    const contacts = await client.getContacts()
-
-
-    const merged2 = await Promise.all(contacts.map(async (contact) => {
-      const chat = await contact.getChat()
-      return { chat, contact }
-    }))
-    //const nonSavedContacts = chatContacts.filter((contact) => !contact.isMyContact)
-   
-    
-    const prospects = merged2
+    const prospects = await getClientProspects(client, req.params.sessionId, ignoreCache)
     res.json({ success: true, prospects })
   } catch (error) {
+    console.error(error)
+    sendErrorResponse(res, 500, error.message)
+  }
+}
+
+const searchProspects = async (req, res) => {
+  const search = req.query.search?.trim()
+  const page = req.query.page || 1
+  const perPage = req.query.perPage || 10
+  const ignoreCache = req.query.ignoreCache
+
+  try {
+    const client = sessions.get(req.params.sessionId)
+    let prospects = await getClientProspects(client, req.params.sessionId, ignoreCache)
+    console.log('ALl items', prospects.length)
+    let totalItems = prospects.length
+    if (prospects) {
+      if (search && search.length > 0) {
+        prospects = prospects
+          .filter((prospect) => {
+            // console.log([prospect.contact.name, prospect.chat.name, prospect.contact.number], search)
+            return [prospect.contact.name, prospect.chat.name, prospect.contact.number].some((name) => name?.toLowerCase().includes(search?.toLowerCase()))
+          }
+          )
+      }
+      console.log('Filtered items', prospects.length)
+      totalItems = prospects.length
+      prospects = prospects.slice((page - 1) * perPage, page * perPage)
+      console.log('Sliced items', prospects.length)
+    }
+    return res.json({
+      success: true,
+      data: {
+        page,
+        perPage,
+        prospects,
+        totalItems
+      }
+    })
+  } catch (error) {
+    console.error(error)
     sendErrorResponse(res, 500, error.message)
   }
 }
@@ -1311,6 +1346,7 @@ module.exports = {
   getChatLabels,
   getChats,
   getProspects,
+  searchProspects,
   getChatsByLabelId,
   getCommonGroups,
   getContactById,
