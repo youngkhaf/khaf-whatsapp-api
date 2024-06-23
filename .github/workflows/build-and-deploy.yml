@@ -20,6 +20,20 @@ jobs:
     runs-on: ubuntu-latest  # Or a relevant runner environment
 
     steps:
+      - uses: actions/checkout@v3  # Checkout code from GitHub
+
+      - name: Login to Docker Hub (securely)
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_IMAGE_NAME}}:latest .
+
+      - name: Push Docker image to Docker Hub
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_IMAGE_NAME}}
 
         #Copy docker-compose and .env files to target server
       
@@ -30,7 +44,7 @@ jobs:
           host: ${{vars.HOSTNAME}}
           username: ${{secrets.SERVER_USERNAME}}
           key: ${{secrets.SSH_PRIVATE_KEY }}
-          source: "./*"
+          source: "./docker-compose.yml,./docker-compose.prod.yml,./.env.prod"
           target: "${{vars.DEPLOY_PATH}}/${{ github.event.repository.name }}/"
 
       
@@ -42,7 +56,7 @@ jobs:
           key: ${{secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ${{vars.DEPLOY_PATH}}/${{ github.event.repository.name }}
-            docker build -t ${{vars.DOCKER_IMAGE_NAME}} .
+            docker system prune -f
             docker compose -f docker-compose.yml down
             docker compose -f docker-compose.yml pull
             #avoid image is already in use by another container
