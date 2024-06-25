@@ -367,7 +367,7 @@ const searchProspects = async (req, res) => {
         prospects = prospects
           .filter((prospect) => {
             // console.log([prospect.contact.name, prospect.chat.name, prospect.contact.number], search)
-            return [prospect.contact.name, prospect.chat.name, prospect.contact.number].some((name) => name?.toLowerCase().includes(search?.toLowerCase()))
+            return [prospect.contact?.name, prospect.chat?.name, prospect.contact?.number].some((name) => name && name.toLowerCase().includes(search.toLowerCase()))
           }
           )
       }

@@ -16,7 +16,7 @@ try {
         return undefined
       }
       // reconnect after
-      return Math.min(options.attempt * 100, 3000)
+      return 300000
     },
     url: 'redis://api.sentek.app:6379',
     password: 'gRuL£TED65A5>TjQ15x'
